@@ -1,8 +1,6 @@
 package com.rachna;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public enum Teams {
     //CSK(Arrays.asList("DHONI", "RAINA", "VIJAY", "MONU", "JADEJA")),

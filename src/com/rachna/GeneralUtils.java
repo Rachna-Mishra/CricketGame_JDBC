@@ -3,7 +3,6 @@ package com.rachna;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class GeneralUtils {
 
@@ -26,22 +25,18 @@ public class GeneralUtils {
     }
 
     //===============selecting 2 random Teams from number of Teams=============
-    private static List<String > selectedTeams=new ArrayList<String>();
-
-    public static List<String> getSelectedTeams(int numberOfTeams) throws Exception {
+    public static List<Teams> getSelectedTeams(int numberOfTeams)
+    {
+        List<Teams> selectedTeams=new ArrayList<Teams>();
         Random r = GeneralUtils.getRandomFunction();
         int index1 = r.nextInt(numberOfTeams);
-        selectedTeams.add(GeneralUtils.getTeamList().get(index1));
+        selectedTeams.add(Teams.values()[index1]);
         int index2;
         do {
             index2 = r.nextInt(numberOfTeams);
         } while (index1 == index2);
-        selectedTeams.add(GeneralUtils.getTeamList().get(index2));
-        return selectedTeams;
-    }
 
-    public static List<String> getTeamList() throws Exception {
-        List<String> listOfTeams=(ImmutableMap.getTeamList()).stream().collect(Collectors.toList());
-        return listOfTeams;
+        selectedTeams.add(Teams.values()[index2]);
+        return selectedTeams;
     }
 }

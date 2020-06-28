@@ -3,89 +3,111 @@ package com.rachna;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-public class MatchController {
-    Scanner sc = new Scanner(System.in);
+public class MatchController
+{
     private int team1Score;
     private int team2Score;
     private int wickets1;
     private int wickets2;
-    private static int numberOfTeams;
-    private static int numberOfOvers;
-    private static int numberOfMatches;
-    private static String winnerOfSeries;
+    private String winnerOfSeries;
     private List<ScoreBoard> listOfScoreBoard;
     private List<String> listOfWinnerTeam;
-    private static String selectedTeamForBatting;
-    private static String selectedTeamForBowling;
+    private Teams selectedTeamForBatting;
+    private Teams selectedTeamForBowling;
     private static String result;
+    private int numberOfOvers;
+    private int numberOfTeams;
+    private int numberOfMatches;
+    private List<Teams> selectedTeams;
+    private int winningPointOfTeam1;
+    private int winningPointOfTeam2;
 
-    MatchController(int numberOfMatches) {
-        this.numberOfMatches = numberOfMatches;
+    MatchController(int numberOfMatches,int numberOfOvers,int numberOfTeams)
+    {
+        this.numberOfTeams=numberOfTeams;
+        this.numberOfOvers=numberOfOvers;
+        this.numberOfMatches=numberOfMatches;
     }
 
-    public void organizeMatches() throws Exception {
+    public void organizeMatches()
+    {
+        winningPointOfTeam1=0;
+        winningPointOfTeam2=0;
         listOfScoreBoard = new ArrayList<>();
         listOfWinnerTeam = new ArrayList<>();
-        while (numberOfMatches-- > 0) {
-            System.out.println("Enter number of overs for this match");
-            numberOfOvers = sc.nextInt();
 
-            System.out.println("Number of teams participating for this match range upto 4");
-            numberOfTeams = sc.nextInt();
-
+        // =====================Selection Of 2 Teams from Number Of Teams ======================
+        selectedTeams = GeneralUtils.getSelectedTeams(numberOfTeams);
+        System.out.println("-------------Match Started between Teams " + " " + selectedTeams.get(0) + " and " + selectedTeams.get(1) + "-----------------");
+        int winnerPoint=numberOfMatches/2+1;
+        int i=0;
+        while (numberOfMatches-- > 0)
+        {
+            i++;
+            System.out.println("=============Match "+i+" started================");
             ScoreBoard scoreBoard = new ScoreBoard();
             listOfScoreBoard.add(scoreBoard);
-
             Match match = new Match(numberOfOvers, scoreBoard);
 
-            // =====================Selection Of 2 Teams from Number Of Teams ======================
-            List<String> selectedTeams = GeneralUtils.getSelectedTeams(numberOfTeams);
-
-            System.out.println("-------------Match Started between Teams " + " " + selectedTeams.get(0) + " and " + selectedTeams.get(1) + "-----------------");
-
             //------------------Match Tossed between selected Teams-------------------
-            String tossWonTeamCode = (GeneralUtils.getWinner() == 0) ? selectedTeams.get(0) : selectedTeams.get(1);
+            Teams tossWonTeamCode = (GeneralUtils.getWinner() == 0) ? selectedTeams.get(0) : selectedTeams.get(1);
             selectedTeamForBatting = selectedTeams.get(0);
             selectedTeamForBowling = selectedTeams.get(1);
             System.out.println("------------Team " + tossWonTeamCode + " Won the Toss------------");
 
-            String batOrBowl = (GeneralUtils.getWinner() == 0) ? Constant.BATTING.name() : Constant.BOWLING.name();
+            String batOrBowl = (GeneralUtils.getWinner() == 0) ? Constants.Batting : Constants.Bowling;
             System.out.println("------------Team " + tossWonTeamCode + " Opted for " + batOrBowl + "---------------");
 
-            if (tossWonTeamCode == selectedTeams.get(1)) {
-                if (Constant.BATTING.name().equalsIgnoreCase(batOrBowl)) {
+            if (tossWonTeamCode == selectedTeams.get(1))
+            {
+                if (Constants.Batting.equalsIgnoreCase(batOrBowl)) {
                     selectedTeamForBatting = selectedTeams.get(1);
                     selectedTeamForBowling = selectedTeams.get(0);
                 } else {
                     selectedTeamForBatting = selectedTeams.get(0);
                     selectedTeamForBowling = selectedTeams.get(1);
                 }
-            } else {
-                if (Constant.BOWLING.name().equalsIgnoreCase(batOrBowl)) {
+            }
+            else{
+                if (Constants.Bowling.equalsIgnoreCase(batOrBowl)) {
                     selectedTeamForBatting = selectedTeams.get(1);
                     selectedTeamForBowling = selectedTeams.get(0);
                 }
             }
 
-            /*   /* -------Adding Players detail Of Playing Teams in scoreBoard --------- */
-        /*    addPlayersDetail(scoreBoard, selectedTeamForBatting);
+            /* -------Adding Players detail Of Playing Teams in scoreBoard --------- */
+            addPlayersDetail(scoreBoard, selectedTeamForBatting);
             addPlayersDetail(scoreBoard, selectedTeamForBowling);
 
             //----------------------------Match Started-----------------
-            startMatch(match, selectedTeamForBatting, selectedTeamForBowling);
+            String winnerOfMatch=startMatch(match, selectedTeamForBatting, selectedTeamForBowling);
+            if(winnerOfMatch==null){}
+            else if(winnerOfMatch.equalsIgnoreCase(selectedTeams.get(0).name()))
+                winningPointOfTeam1++;
+            else if(winnerOfMatch.equalsIgnoreCase(selectedTeams.get(1).name()))
+                winningPointOfTeam2++;
 
             //------------------Showing ScoreBoard Details------------------------
             scoreBoard.displayScoreBoard(selectedTeamForBatting, selectedTeamForBowling);
             System.out.println();
+            if(winningPointOfTeam1==winnerPoint)
+            {
+                winnerOfSeries=selectedTeams.get(0).name();
+                break;
+            }
+            if(winningPointOfTeam2==winnerPoint)
+            {
+                winnerOfSeries=selectedTeams.get(1).name();
+                break;
+            }
         }
         getWinnerOfSeries();
         displayAllMatchScoreBoard();
         System.out.println("Winner of Series : "+winnerOfSeries);
     }
 
-    public void startMatch(Match match, Teams team1, Teams team2)
+    public String startMatch(Match match, Teams team1, Teams team2)
     {
         System.out.println("----------Match Started---------------");
         System.out.println("---------Team " + team1 + " Ready for Batting----------------");
@@ -98,13 +120,21 @@ public class MatchController {
         wickets2 = match.getTotalWickets(team2);
         System.out.println("Total Wickets Of Team : " + wickets2);
         System.out.println();
+        String  winnerTeam = null;
         if (team1Score > team2Score)
+        {
             result = "team1";
+            winnerTeam=team1.name();
+        }
         else if (team1Score < team2Score)
+        {
             result = "team2";
+            winnerTeam=team2.name();
+        }
         else
             result = "tie";
         printScore(result);
+        return winnerTeam;
     }
 
     public void printScore(String winnerTeamOfMatch) {
@@ -140,7 +170,7 @@ public class MatchController {
                 {
                     int jerseyNumber=playerList.getKey();
                     String playerName=playerList.getValue();
-                    PlayerDetail player=new PlayerDetail(jerseyNumber,playerName,team).newPlayer();
+                    PlayerDetail player=new PlayerDetail(jerseyNumber,playerName,team);
                     String playerKey = player.getUniquePlayerKey(player);
                     scoreBoard.playerDetailsMap.put(playerKey, player);
                 }
@@ -150,28 +180,14 @@ public class MatchController {
         }
     }
 
-    public void getWinnerOfSeries() {
-        int max = 0;
-        int[] countWinningPoint = new int[numberOfTeams];
-        for (String winner : listOfWinnerTeam) {
-            if (winner.equalsIgnoreCase(Teams.CSK.name())) {
-                countWinningPoint[Teams.CSK.ordinal()] += 1;
-                max = max < countWinningPoint[Teams.CSK.ordinal()] ? countWinningPoint[Teams.CSK.ordinal()] : max;
-                winnerOfSeries = Teams.CSK.name();
-            } else if (winner.equalsIgnoreCase(Teams.KKR.name())) {
-                countWinningPoint[Teams.KKR.ordinal()] += 1;
-                max = max < countWinningPoint[Teams.KKR.ordinal()] ? countWinningPoint[Teams.KKR.ordinal()] : max;
-                winnerOfSeries = Teams.KKR.name();
-            } else if (winner.equalsIgnoreCase(Teams.MI.name())) {
-                countWinningPoint[Teams.MI.ordinal()] += 1;
-                max = max < countWinningPoint[Teams.MI.ordinal()] ? countWinningPoint[Teams.MI.ordinal()] : max;
-                winnerOfSeries = Teams.MI.name();
-            } else if (winner.equalsIgnoreCase(Teams.RBC.name())) {
-                countWinningPoint[Teams.RBC.ordinal()] += 1;
-                max = max < countWinningPoint[Teams.RBC.ordinal()] ? countWinningPoint[Teams.RBC.ordinal()] : max;
-                winnerOfSeries = Teams.RBC.name();
-            } else{}
-        }
+    public void getWinnerOfSeries()
+    {
+        if(winningPointOfTeam1>winningPointOfTeam2)
+            winnerOfSeries=selectedTeams.get(0).name();
+        else if (winningPointOfTeam2>winningPointOfTeam1)
+            winnerOfSeries=selectedTeams.get(1).name();
+        else
+            winnerOfSeries="Series Draw";
     }
 
     public void displayAllMatchScoreBoard()
@@ -185,8 +201,6 @@ public class MatchController {
             scoreBoard.displayMatchBoard(scoreBoard);
             System.out.println();
             matchNumber++;
-        }
-    }*/
         }
     }
 }

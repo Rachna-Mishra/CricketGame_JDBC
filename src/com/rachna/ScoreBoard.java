@@ -48,14 +48,20 @@ public class ScoreBoard {
     //======================Java Beans Pattern==========================
     public void updateScoreBoard(int jerseyNumber,String playerName, Teams teamName, PlayerDetail.PlayerType playerType, int totalRunsScored, int totalWicketsTaken, int totalBallsPlayed)
     {
-        PlayerDetail newPlayer = new PlayerDetail(jerseyNumber,playerName,teamName).
-                setPlayerType(playerType).
-                setTotalRunsScored(totalRunsScored).
-                setTotalWicketsTaken(totalWicketsTaken).
-                setTotalBallsPlayed(totalBallsPlayed);
-
-        String playerKey = newPlayer.getUniquePlayerKey(newPlayer);
-        playerDetailsMap.put(playerKey, newPlayer);
+        String playerKey =teamName+"_"+playerName+"_"+jerseyNumber;
+        if(playerDetailsMap.containsKey(playerKey)) {
+            PlayerDetail player=playerDetailsMap.get(playerKey);
+            player.setPlayerType(playerType);
+            player.setTotalRunsScored(totalRunsScored);
+            player.setTotalWicketsTaken(totalWicketsTaken);
+            player.setTotalBallsPlayed(totalBallsPlayed);
+        }
+        else
+        {
+            //System.out.println("==================sbdsjfhkjdshfklsdjfkadhkghak=====Rachna=========================");
+            PlayerDetail newPlayer=new PlayerDetail(jerseyNumber,playerName,teamName);
+            playerDetailsMap.put(playerKey, newPlayer);
+        }
     }
 
     public void displayMatchBoard(ScoreBoard scoreBoard)

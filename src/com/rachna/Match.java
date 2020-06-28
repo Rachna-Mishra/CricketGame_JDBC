@@ -20,7 +20,7 @@ public class Match
     private  int totalBallsByPlayerOnStrike=0;
     private  int totalBallsByPlayerOnPitch=0;
     private  String currentBowler;
-    private  int totalWicketsOfBowler;
+   // private  int totalWicketsOfBowler;
     private ScoreBoard scoreBoard;
 
     Match(int noOfOvers,ScoreBoard scoreBoard) {
@@ -95,7 +95,7 @@ public class Match
         totalScoreOfPlayerOnPitch=0;
         totalBallsByPlayerOnStrike=0;
         totalBallsByPlayerOnPitch=0;
-        totalWicketsOfBowler=0;
+        //totalWicketsOfBowler=0;
     }
 
     public int getTotalWickets(Teams team)
