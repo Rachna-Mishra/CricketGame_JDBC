@@ -1,49 +1,35 @@
 package com.rachna;
 
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public enum Teams {
-    //CSK(Arrays.asList("DHONI", "RAINA", "VIJAY", "MONU", "JADEJA")),
-    //KKR(Arrays.asList("DINESH", "ROBIN", "LYNN", "SUNIL", "PIYUSH")),
-    //MI(Arrays.asList("ROHIT", "SURYA", "RAHUL", "ADITYA", "ADAM")),
-    //RBC(Arrays.asList("VIRAT", "PARTHIV", "UMESH", "PAWAN", "SIRAJ"));
-
-    CSK(ImmutableMap.teamCSK),
-   KKR(ImmutableMap.teamKKR),
-   MI(ImmutableMap.teamMI),
-   RBC(ImmutableMap.teamRBC);
-
-    private  Map<Integer,String > playerList;
-
-    private Teams(Map<Integer, String> playerList)
+class Teams
+{
+    private PreparedStatement ps=null;
+    private ResultSet resultSet=null;
+    private static Teams teamObject;
+    private Teams(){}
+    public static Teams getInstance()
     {
-        this.playerList=playerList;
-    }
-    public Map<Integer, String> getPlayerList()
-    {
-        return this.playerList;
-    }
-
-    public static Map<Integer, String> retrivePlayerList(Teams teamPlaying) {
-        Teams[] teams = Teams.values();
-        for (Teams team : teams) {
-            if (team.equals(teamPlaying))
-                return team.getPlayerList();
+        if(teamObject==null)
+        {
+            teamObject=new Teams();
         }
-        return null;
+        return teamObject;
     }
-
-    public static List<String> fetchPlayerList(Teams teamPlaying)
+    public String getTeamName(int teamId) throws Exception
     {
-        Teams[] teams = Teams.values();
-        for (Teams team : teams) {
-            if(team.equals(teamPlaying))
-            {
-                ArrayList<String> playerList=new ArrayList<>(team.getPlayerList().values());
-                return playerList;
-            }
-        }
-        return null;
+        ps=ConnectionUtil.connection.prepareStatement("select TeamName from TeamDetails where TeamId = ?");
+        resultSet=ps.executeQuery();
+        return resultSet.getString(1);
     }
 
+    public void insertNewTeamData(int teamId,String teamName)throws Exception
+    {
+        ps=ConnectionUtil.connection.prepareStatement("insert into TeamDetails values (?,?)");
+        ps.setInt(1,teamId);
+        ps.setString(2,teamName);
+        ps.execute();
+    }
 }

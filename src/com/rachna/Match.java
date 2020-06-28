@@ -1,50 +1,51 @@
 package com.rachna;
 
-import java.util.ArrayList;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
+import java.util.ResourceBundle;
 
-public class Match
+class Match
 {
-    private  int noOfOvers;
+    private static Match matchObject;
+    private Match(){}
+    public static Match getInstance()
+    {
+        if(matchObject==null)
+        {
+            matchObject=new Match();
+        }
+        return matchObject;
+    }
+    private PreparedStatement ps=null;
+    private ResultSet resultSet=null;
     private int score=0;
     private int sequenceNo=0;
     private  int totalWicketsOfTeam;
-    private int jerseyNumberOfStriker;
-    private int jerseyNumberOfOtherPlayer;
-    private  String currentPlayerOnStrike;
-    private  String currentPlayerOnPitch;
+    private  int currentPlayerOnStrike;
+    private  int currentPlayerOnPitch;
     private  int totalScoreOfPLayerOnStrike=0;
     private  int totalScoreOfPlayerOnPitch=0;
     private  int totalBallsByPlayerOnStrike=0;
     private  int totalBallsByPlayerOnPitch=0;
-    private  String currentBowler;
-   // private  int totalWicketsOfBowler;
-    private ScoreBoard scoreBoard;
 
-    Match(int noOfOvers,ScoreBoard scoreBoard) {
-        this.noOfOvers = noOfOvers;
-        this.scoreBoard=scoreBoard;
-    }
+    public int calculateScore(int teamId) throws Exception{
 
-    public int calculateScore(Teams teamPlaying)
-    {
-        initializeValues(teamPlaying);
-        Map<Integer,String> playerDetailMap=Teams.retrivePlayerList(teamPlaying);
-        List<String> playerList = new ArrayList<>(playerDetailMap.values());
-        List<Integer> jerseyNumberList=new ArrayList<>(playerDetailMap.keySet());
-
-        currentPlayerOnStrike = playerList.get(sequenceNo);
-        jerseyNumberOfStriker=jerseyNumberList.get(sequenceNo++);
+        initializeValues(teamId);
+        List<Integer> playerList = GlobalObjects.playerObject.getPlayerList(teamId);
+        sequenceNo=0;
+        currentPlayerOnStrike = playerList.get(sequenceNo++);
         currentPlayerOnPitch = playerList.get(sequenceNo);
-        jerseyNumberOfOtherPlayer=jerseyNumberList.get(sequenceNo++);
 
-        for (int i = 1; i <= noOfOvers * 6; i++) {
+        for (int ball = 1; ball <= GlobalObjects.matchController.numberOfOvers * 6; ball++)
+        {
             Random r = GeneralUtils.getRandomFunction();
             int run = r.nextInt(8);
+            GlobalObjects.scoreBoard.updateScoreBoard(teamId,ball,run,score,currentPlayerOnPitch,currentPlayerOnStrike);
             if (run!=1 && run !=3 && run!=7) {
-                System.out.println(currentPlayerOnStrike + " Player is on Strike");
+                System.out.println(GlobalObjects.playerObject.getPlayerName(currentPlayerOnStrike) + " Player is on Strike");
                 totalScoreOfPLayerOnStrike+=run;
                 totalBallsByPlayerOnStrike+=1;
                 score += run;
@@ -54,22 +55,21 @@ public class Match
                 totalBallsByPlayerOnStrike+=1;
                 score += run;
                 swapPlayersPosition();
-                System.out.println(currentPlayerOnStrike + " Player is on Strike");
+                System.out.println(GlobalObjects.playerObject.getPlayerName(currentPlayerOnStrike) + " Player is on Strike");
             }
             else{
                 System.out.println("!!!!!!!!!!!!--------------Wicket---------------!!!!!!!!!!! ");
                 if(run==7)
                 {
-                   // System.out.println(currentPlayerOnStrike+" total score of Striker "+totalScoreOfPLayerOnStrike+" "+totalBallsByPlayerOnStrike);
-                    Teams team=teamPlaying;
-                    scoreBoard.updateScoreBoard(jerseyNumberOfStriker,currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
+                    // System.out.println(currentPlayerOnStrike+" total score of Striker "+totalScoreOfPLayerOnStrike+" "+totalBallsByPlayerOnStrike);
+                    GlobalObjects.playerObject.updatePlayerRecord(teamId,currentPlayerOnStrike,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
                     totalScoreOfPLayerOnStrike=0;
                     totalBallsByPlayerOnStrike=0;
+                    sequenceNo++;
                 }
                 totalWicketsOfTeam++;
                 if (sequenceNo < playerList.size())
                 {
-                    jerseyNumberOfStriker=jerseyNumberList.get(sequenceNo);
                     currentPlayerOnStrike = playerList.get(sequenceNo++);
                 }
             }
@@ -80,13 +80,12 @@ public class Match
                 break;
             }
         }
-        Teams team=teamPlaying;
-        scoreBoard.updateScoreBoard(jerseyNumberOfStriker,currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
-        scoreBoard.updateScoreBoard(jerseyNumberOfOtherPlayer,currentPlayerOnPitch,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPlayerOnPitch,0,totalBallsByPlayerOnPitch);
+        GlobalObjects.playerObject.updatePlayerRecord(teamId,currentPlayerOnStrike,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
+        GlobalObjects.playerObject.updatePlayerRecord(teamId,currentPlayerOnPitch,totalScoreOfPlayerOnPitch,0,totalBallsByPlayerOnPitch);
         return score;
     }
 
-    void initializeValues(Teams teamPlaying)
+    void initializeValues(int teamPlaying)
     {
         score = 0;
         sequenceNo = 0;
@@ -95,29 +94,64 @@ public class Match
         totalScoreOfPlayerOnPitch=0;
         totalBallsByPlayerOnStrike=0;
         totalBallsByPlayerOnPitch=0;
-        //totalWicketsOfBowler=0;
     }
 
-    public int getTotalWickets(Teams team)
+    public int getTotalWickets(int teamId)
     {
         return totalWicketsOfTeam;
     }
 
     public void swapPlayersPosition() {
-        String temp = currentPlayerOnStrike;
+        int temp = currentPlayerOnStrike;
         currentPlayerOnStrike=currentPlayerOnPitch;
         currentPlayerOnPitch= temp;
 
-        int tem=jerseyNumberOfStriker;
-        jerseyNumberOfStriker=jerseyNumberOfOtherPlayer;
-        jerseyNumberOfOtherPlayer=tem;
-
-        tem=totalScoreOfPLayerOnStrike;
+         temp=totalScoreOfPLayerOnStrike;
         totalScoreOfPLayerOnStrike=totalScoreOfPlayerOnPitch;
-        totalScoreOfPlayerOnPitch=tem;
+        totalScoreOfPlayerOnPitch=temp;
 
-        tem=totalBallsByPlayerOnStrike;
+        temp=totalBallsByPlayerOnStrike;
         totalBallsByPlayerOnStrike=totalBallsByPlayerOnPitch;
-        totalBallsByPlayerOnPitch=tem;
+        totalBallsByPlayerOnPitch=temp;
+    }
+
+    public void insertMatchRecord(int BattingTeam,int team1Score,int team1Wickets,int team2Score,int team2Wickets,int winnerTeamOfMatch) throws SQLException {
+        ps=ConnectionUtil.connection.prepareStatement("insert into MatchRecord values (?,?,?,?,?,?,?,?)");
+        ps.setInt(2,GlobalObjects.matchController.matchId);
+        ps.setInt(1,GlobalObjects.matchController.seriesId);
+        ps.setInt(3,BattingTeam);
+        ps.setInt(4,team1Score);
+        ps.setInt(5,team1Wickets);
+        ps.setInt(6,team2Score);
+        ps.setInt(7,team2Wickets);
+        ps.setInt(8,winnerTeamOfMatch);
+        ps.executeUpdate();
+        System.out.println("Updated MatchRecord");
+    }
+
+    public void viewMatchRecord(int seriesId,int matchId) throws Exception
+    {
+        ps=ConnectionUtil.connection.prepareStatement("select * from MatchRecord where SeriesId=? and MatchId=?");
+        ps.setInt(1,seriesId);
+        ps.setInt(2,matchId);
+        resultSet=ps.executeQuery();
+        while (resultSet.next())
+        {
+            System.out.println("Team1 Score : "+resultSet.getInt(4)+
+                                "Team1 Wickets : "+resultSet.getInt(5)+
+                                "Team2 Score : "+resultSet.getInt(6)+
+                                "Team2 Wickets : "+resultSet.getInt(7)+
+                    "Winner Of Match :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(8)));
+        }
+    }
+
+    public String getWinnerOfTheMatch(int seriesId,int matchId)throws Exception
+    {
+        ps=ConnectionUtil.connection.prepareStatement("select WinnerTeamId from MatchRecord where SeriesId=? and MatchId=?");
+        ps.setInt(1,seriesId);
+        ps.setInt(1,matchId);
+        resultSet=ps.executeQuery();
+        resultSet.next();
+        return GlobalObjects.teamObject.getTeamName(resultSet.getInt(1));
     }
 }
