@@ -43,4 +43,32 @@ class ScoreBoard {
         resultSet.next();
         return resultSet.getInt("CurrentScore");
     }
+
+    public void getScoreBoardForInningData(int seriesId,int matchId,int inning,int ball)throws Exception
+    {
+        if(inning==1)
+            ps=ConnectionUtil.connection.prepareStatement("select BattingTeam from MatchRecord where SeriesId=?,MatchId=?");
+        else
+            ps=ConnectionUtil.connection.prepareStatement("select BowlingTeam from MatchRecord where SeriesId=?,MatchId=?");
+        ps.setInt(1,seriesId);
+        ps.setInt(2,matchId);
+        resultSet=ps.executeQuery();
+        resultSet.next();
+        int teamId=resultSet.getInt(1);
+
+        ps=ConnectionUtil.connection.prepareStatement("select * from ScoreBoard where SeriesId=?,MatchId=?,TeamId=?,BallNumber=?");
+        ps.setInt(1,seriesId);
+        ps.setInt(2,matchId);
+        ps.setInt(3,teamId);
+        ps.setInt(4,ball);
+        resultSet=ps.executeQuery();
+        while (resultSet.next())
+        {
+            System.out.println("BallNumber : "+resultSet.getInt(4)+
+                                "Run : "+resultSet.getInt(5)+
+                                "CurrentScore: "+resultSet.getInt(6)+
+                                "Player On Strike : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(8))+
+                                "Player On Pitch : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(7)));
+        }
+    }
 }

@@ -115,16 +115,17 @@ class Match
         totalBallsByPlayerOnPitch=temp;
     }
 
-    public void insertMatchRecord(int BattingTeam,int team1Score,int team1Wickets,int team2Score,int team2Wickets,int winnerTeamOfMatch) throws SQLException {
-        ps=ConnectionUtil.connection.prepareStatement("insert into MatchRecord values (?,?,?,?,?,?,?,?)");
-        ps.setInt(2,GlobalObjects.matchController.matchId);
+    public void insertMatchRecord(int BattingTeam,int BowlingTeam,int team1Score,int team1Wickets,int team2Score,int team2Wickets,int winnerTeamOfMatch) throws SQLException {
+        ps=ConnectionUtil.connection.prepareStatement("insert into MatchRecord values (?,?,?,?,?,?,?,?,?)");
         ps.setInt(1,GlobalObjects.matchController.seriesId);
+        ps.setInt(2,GlobalObjects.matchController.matchId);
         ps.setInt(3,BattingTeam);
-        ps.setInt(4,team1Score);
-        ps.setInt(5,team1Wickets);
-        ps.setInt(6,team2Score);
-        ps.setInt(7,team2Wickets);
-        ps.setInt(8,winnerTeamOfMatch);
+        ps.setInt(4,BowlingTeam);
+        ps.setInt(5,team1Score);
+        ps.setInt(6,team1Wickets);
+        ps.setInt(7,team2Score);
+        ps.setInt(8,team2Wickets);
+        ps.setInt(9,winnerTeamOfMatch);
         ps.executeUpdate();
         System.out.println("Updated MatchRecord");
     }

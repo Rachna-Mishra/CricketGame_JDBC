@@ -129,6 +129,6 @@ public class MatchController {
         }
         else
             System.out.println("---------------------Match Tie--------------------");
-        GlobalObjects.matchObject.insertMatchRecord(team1,team1Score,wickets1,team2Score,wickets2,winnerTeam);
+        GlobalObjects.matchObject.insertMatchRecord(team1,team2,team1Score,wickets1,team2Score,wickets2,winnerTeam);
     }
 }
