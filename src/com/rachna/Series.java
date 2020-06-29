@@ -21,14 +21,15 @@ public class Series {
     }
 
 
-    public void insertSeriesRecord(int numberOfMatches,int team1,int team2,int winnerOfSeries) throws SQLException {
+    public void insertSeriesRecord(int seriesId,int numberOfMatches,int team1,int team2,int winnerOfSeries) throws SQLException {
         ps=ConnectionUtil.connection.prepareStatement("insert into SeriesRecord values (?,?,?,?,?)");
-        ps.setInt(1,GlobalObjects.matchController.seriesId);
+        ps.setInt(1,seriesId);
         ps.setInt(2,numberOfMatches);
         ps.setInt(3,team1);
         ps.setInt(4,team2);
         ps.setInt(5,winnerOfSeries);
         ps.execute();
+//        System.out.println("Series Updated");
     }
 
     public void viewSeriesRecord(int seriesId) throws Exception {
@@ -37,10 +38,11 @@ public class Series {
         resultSet=ps.executeQuery();
         while (resultSet.next())
         {
-            System.out.println("Number Of Matches : "+resultSet.getInt(2)+
-                                "Team 1 :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(3))+
-                                "Team 2 :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(4))+
-                            "Winner Of Series :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(4)));
+            System.out.println(" Series Id : " +seriesId+
+                                "\n Number Of Matches : "+resultSet.getInt(2)+
+                                "\n Team 1 :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(3))+
+                                "\n Team 2 :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(4))+
+                            "\n Winner Of Series :"+GlobalObjects.teamObject.getTeamName(resultSet.getInt(4)));
         }
     }
 
@@ -50,6 +52,9 @@ public class Series {
         ps.setInt(1,seriesId);
         resultSet=ps.executeQuery();
         resultSet.next();
-       return GlobalObjects.teamObject.getTeamName(resultSet.getInt(1));
+        if(resultSet.getInt("WinnerSeriesTeamId")==0)
+            return "--Series Tie--";
+        else
+            return GlobalObjects.teamObject.getTeamName(resultSet.getInt("WinnerSeriesTeamId"));
     }
 }

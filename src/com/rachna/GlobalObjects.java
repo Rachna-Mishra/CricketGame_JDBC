@@ -1,6 +1,7 @@
 package com.rachna;
 
-public class GlobalObjects {
+public class GlobalObjects
+{
     public static Teams teamObject=Teams.getInstance();
     public static ScoreBoard scoreBoard=ScoreBoard.getInstance();
     public static Player playerObject=Player.getInstance();

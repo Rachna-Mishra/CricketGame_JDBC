@@ -18,11 +18,14 @@ class Teams
         }
         return teamObject;
     }
+
     public String getTeamName(int teamId) throws Exception
     {
         ps=ConnectionUtil.connection.prepareStatement("select TeamName from TeamDetails where TeamId = ?");
+        ps.setInt(1,teamId);
         resultSet=ps.executeQuery();
-        return resultSet.getString(1);
+        resultSet.next();
+        return resultSet.getString("TeamName");
     }
 
     public void insertNewTeamData(int teamId,String teamName)throws Exception

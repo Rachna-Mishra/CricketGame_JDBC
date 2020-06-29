@@ -1,5 +1,7 @@
 package com.rachna;
 
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
+
 import java.util.List;
 
 public class MatchController {
@@ -18,9 +20,9 @@ public class MatchController {
     public int numberOfOvers;
     public int numberOfTeams;
     public int numberOfMatches;
-    public int seriesId=0;
-    public int matchId=0;
-    private int winnerOfSeries;
+    public int seriesId;
+    public int matchId;
+    private int winnerOfSeries=0;
     private int team1Score;
     private int team2Score;
     private int wickets1;
@@ -35,6 +37,7 @@ public class MatchController {
 
     public void organizeMatches(int seriesId, int numberOfMatches, int numberOfOvers, int numberOfTeams) throws Exception {
         this.seriesId=seriesId;
+        this.matchId=0;
         this.numberOfMatches=numberOfMatches;
         this.numberOfOvers=numberOfOvers;
         this.numberOfTeams=numberOfTeams;
@@ -43,15 +46,16 @@ public class MatchController {
 
         // =====================Selection Of 2 Teams from Number Of Teams ======================
         selectedTeams = GeneralUtils.getSelectedTeams(numberOfTeams);
-        battingTeamName=GlobalObjects.teamObject.getTeamName(selectedTeams.get(0));
-        bowlingTeamName=GlobalObjects.teamObject.getTeamName(selectedTeams.get(1));
+        teamIdOfBattingTeam=selectedTeams.get(0);
+        teamIdOfBowlingTeam=selectedTeams.get(1);
+        battingTeamName=GlobalObjects.teamObject.getTeamName(teamIdOfBattingTeam);
+        bowlingTeamName=GlobalObjects.teamObject.getTeamName(teamIdOfBowlingTeam);
         System.out.println("-------------Match Started between Teams " + " " + battingTeamName + " and " + bowlingTeamName + "-----------------");
-        int winnerPoint=numberOfMatches/2+1;
+        int winnerPoint=(numberOfMatches/2)+1;
         while (++matchId<=numberOfMatches)
         {
-            System.out.println(GlobalObjects.matchController.seriesId+"  "+GlobalObjects.matchController.matchId);
             System.out.println("=============Match "+matchId+" started================");
-
+            System.out.println();
             //------------------Match Tossed between selected Teams-------------------
             int tossWonTeamCode = (GeneralUtils.getWinner() == 0) ? selectedTeams.get(0) : selectedTeams.get(1);
             battingTeamName = GlobalObjects.teamObject.getTeamName(selectedTeams.get(0));
@@ -84,20 +88,22 @@ public class MatchController {
 
            //----------------------------Match Started-----------------
             startMatch(teamIdOfBattingTeam, teamIdOfBowlingTeam);
-            System.out.println(GlobalObjects.matchObject.getWinnerOfTheMatch(seriesId,matchId));
             if(winningPointOfTeam1==winnerPoint)
             {
-                winnerOfSeries=teamIdOfBattingTeam;
+                winnerOfSeries=selectedTeams.get(0);
                 break;
             }
             if(winningPointOfTeam2==winnerPoint)
             {
-                winnerOfSeries=teamIdOfBowlingTeam;
+                winnerOfSeries=selectedTeams.get(1);
                 break;
             }
         }
-        GlobalObjects.seriesObject.insertSeriesRecord(numberOfMatches,selectedTeams.get(0),selectedTeams.get(1),winnerOfSeries);
-       System.out.println(GlobalObjects.seriesObject.getWinnerOfSeries(seriesId));
+        if(winningPointOfTeam1<winningPointOfTeam2)
+            winnerOfSeries=selectedTeams.get(1);
+        else if(winningPointOfTeam1>winningPointOfTeam2)
+            winnerOfSeries=selectedTeams.get(0);
+        GlobalObjects.seriesObject.insertSeriesRecord(seriesId,numberOfMatches,selectedTeams.get(0),selectedTeams.get(1),winnerOfSeries);
     }
 
     public void startMatch(int team1, int team2) throws Exception
@@ -120,15 +126,20 @@ public class MatchController {
         if (team1Score > team2Score)
         {
             winnerTeam=team1;
-            System.out.println("---------------------Team 1 Won--------------------");
+            System.out.println("---------------------Team "+GlobalObjects.teamObject.getTeamName(team1)+" Won--------------------");
         }
         else if (team1Score < team2Score)
         {
             winnerTeam=team2;
-            System.out.println("---------------------Team 2 Won--------------------");
+            System.out.println("---------------------Team "+GlobalObjects.teamObject.getTeamName(team2)  +"Won--------------------");
         }
         else
             System.out.println("---------------------Match Tie--------------------");
         GlobalObjects.matchObject.insertMatchRecord(team1,team2,team1Score,wickets1,team2Score,wickets2,winnerTeam);
+        if(winnerTeam==selectedTeams.get(0))
+            winningPointOfTeam1++;
+        else if(winnerTeam==selectedTeams.get(1))
+            winningPointOfTeam2++;
+        System.out.println("============Winner Of Match :"+GlobalObjects.matchObject.getWinnerOfTheMatch(GlobalObjects.matchController.seriesId,GlobalObjects.matchController.matchId)+" ==========");
     }
 }

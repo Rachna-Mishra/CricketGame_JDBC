@@ -26,17 +26,18 @@ public class GeneralUtils {
     }
 
     //===============selecting 2 random Teams from number of Teams=============
-    public static List<Integer> getSelectedTeams(int numberOfTeams)
+    public static List<Integer> getSelectedTeams(int numberOfTeams)throws Exception
     {
         List<Integer> selectedTeams=new ArrayList<>();
         Random r = GeneralUtils.getRandomFunction();
-        int index1 = r.nextInt(numberOfTeams-1);
+        int index1 = r.nextInt(numberOfTeams);
         int index2;
         do {
             index2 = r.nextInt(numberOfTeams);
         } while (index1 == index2);
-        selectedTeams.add(index1+1);
-        selectedTeams.add(index2+1);
+
+        selectedTeams.add(++index1);
+        selectedTeams.add(++index2);
         return selectedTeams;
     }
 }

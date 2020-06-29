@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 class Player {
     private static Player playerObject;
@@ -25,7 +26,7 @@ class Player {
         ResultSet resultSet=ConnectionUtil.statement.executeQuery("select PlayerId from PlayerDetail where TeamId="+teamId);
         while(resultSet.next())
             playerList.add(resultSet.getInt(1));
-        System.out.println(playerList);
+//        System.out.println(playerList);
         return playerList;
     }
 
@@ -43,12 +44,47 @@ class Player {
         return resultSet;
     }
 
-    public void updatePlayerDetail(int TeamId,int playerId) throws Exception
+    public void updatePlayerDetail(int playerId,int teamId) throws Exception
     {
-        ps=ConnectionUtil.connection.prepareStatement("update PlayerDetail set TeamId =? where PlayerId=?");
-        ps.setInt(1,TeamId);
-        ps.setInt(2,playerId);
+        int teamSize=getPlayerList(teamId).size();
+        if(teamSize>=5)
+        {
+            System.out.println("Limit Exceeded !! We can't add new player");
+            System.out.println("Do you want to swap players from Teams!! If Yes type Y otherwise N ");
+            Scanner sc=new Scanner(System.in);
+            String choice=sc.next();
+            if(choice.equalsIgnoreCase("Yes") || choice.equalsIgnoreCase("y"))
+            {
+                System.out.println("---- Enter Player 1 Detail (TeamId , PlayerId) --------");
+                int team1Id=sc.nextInt();
+                int player1Id=sc.nextInt();
+                System.out.println("---- Enter Player 2 Detail (TeamId , PlayerId) --------");
+                int team2Id=sc.nextInt();
+                int player2Id=sc.nextInt();
+                swapPlayersInTeam(team1Id,player1Id,team2Id,player2Id);
+            }
+            else
+                System.out.println("!!!!! Okay Continue !!!!!!!");
+        }
+        else {
+            ps = ConnectionUtil.connection.prepareStatement("update PlayerDetail set TeamId =? where PlayerId=?");
+            ps.setInt(1, teamId);
+            ps.setInt(2, playerId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void swapPlayersInTeam(int team1Id, int player1Id, int team2Id, int player2Id) throws Exception
+    {
+        ps = ConnectionUtil.connection.prepareStatement("update PlayerDetail set TeamId =? where PlayerId=?");
+        ps.setInt(1, team2Id);
+        ps.setInt(2, player1Id);
         ps.executeUpdate();
+        ps = ConnectionUtil.connection.prepareStatement("update PlayerDetail set TeamId =? where PlayerId=?");
+        ps.setInt(1, team1Id);
+        ps.setInt(2, player2Id);
+        ps.executeUpdate();
+        System.out.println("PLAYER SWAPED IN TEAM");
     }
 
     public void addPlayerRecord(int teamId) throws Exception
@@ -63,7 +99,7 @@ class Player {
             ps.setInt(4,resultSet.getInt(1));
             ps.execute();
         }
-        System.out.println("Updated PlayerRecord");
+//        System.out.println("Updated PlayerRecord");
     }
 
     public void updatePlayerRecord(int TeamId,int playerId,int TotalRuns,int TotalWickets,int TotalBallsPlayed) throws Exception

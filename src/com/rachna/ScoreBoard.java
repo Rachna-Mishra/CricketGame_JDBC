@@ -29,7 +29,7 @@ class ScoreBoard {
         ps.setInt(7, currentPlayerOnPitch);
         ps.setInt(8, currentPlayerOnStrike);
         ps.execute();
-        System.out.println("Updated ScoreBoardd");
+//        System.out.println("Updated ScoreBoardd");
     }
 
     public int getScore(int seriesId,int matchId,int teamId,int ball )throws Exception
@@ -46,17 +46,26 @@ class ScoreBoard {
 
     public void getScoreBoardForInningData(int seriesId,int matchId,int inning,int ball)throws Exception
     {
+        int teamId;
         if(inning==1)
-            ps=ConnectionUtil.connection.prepareStatement("select BattingTeam from MatchRecord where SeriesId=?,MatchId=?");
+        {
+            ps=ConnectionUtil.connection.prepareStatement("select BattingTeam from MatchRecord where SeriesId=? and MatchId=?");
+            ps.setInt(1,seriesId);
+            ps.setInt(2,matchId);
+            resultSet=ps.executeQuery();
+            resultSet.next();
+            teamId=resultSet.getInt("BattingTeam");
+        }
         else
-            ps=ConnectionUtil.connection.prepareStatement("select BowlingTeam from MatchRecord where SeriesId=?,MatchId=?");
-        ps.setInt(1,seriesId);
-        ps.setInt(2,matchId);
-        resultSet=ps.executeQuery();
-        resultSet.next();
-        int teamId=resultSet.getInt(1);
-
-        ps=ConnectionUtil.connection.prepareStatement("select * from ScoreBoard where SeriesId=?,MatchId=?,TeamId=?,BallNumber=?");
+        {
+            ps=ConnectionUtil.connection.prepareStatement("select BowlingTeam from MatchRecord where SeriesId=? and MatchId=?");
+            ps.setInt(1,seriesId);
+            ps.setInt(2,matchId);
+            resultSet=ps.executeQuery();
+            resultSet.next();
+            teamId=resultSet.getInt("BowlingTeam");
+        }
+        ps=ConnectionUtil.connection.prepareStatement("select * from ScoreBoard where SeriesId=? and MatchId=? and TeamId=? and BallNumber=?");
         ps.setInt(1,seriesId);
         ps.setInt(2,matchId);
         ps.setInt(3,teamId);
@@ -64,11 +73,14 @@ class ScoreBoard {
         resultSet=ps.executeQuery();
         while (resultSet.next())
         {
-            System.out.println("BallNumber : "+resultSet.getInt(4)+
-                                "Run : "+resultSet.getInt(5)+
-                                "CurrentScore: "+resultSet.getInt(6)+
-                                "Player On Strike : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(8))+
-                                "Player On Pitch : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(7)));
+            System.out.println(" SeriesId : "+resultSet.getInt(1)+
+                                "\n MatchId : "+resultSet.getInt(2)+
+                                "\n Inning : "+inning+
+                                "\n BallNumber : "+resultSet.getInt(4)+
+                                "\n Run : "+resultSet.getInt(5)+
+                                "\n CurrentScore: "+resultSet.getInt(6)+
+                                "\n Player On Strike : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(8))+
+                                "\n Player On Pitch : "+GlobalObjects.playerObject.getPlayerName(resultSet.getInt(7)));
         }
     }
 }
